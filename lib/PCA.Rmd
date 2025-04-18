@@ -1,0 +1,70 @@
+```{r}
+library(DESeq2)
+library(data.table) 
+library(tidyr)
+library(ggplot2)
+library(ggrepel)
+```
+
+```{r}
+counts <- fread("../data/experiment1/consensus_read_counts.txt")
+colnames(counts) <- c(
+      "Geneid","Chr","Start","End","Strand","Length",
+      "aFLAG_FIX_R1",
+      "aFLAG_FIX_R2",
+      "aFLAG_NATIVE_R1",
+      "aFLAG_NATIVE_R2",
+      "aFOXP3_FIX_R1",
+      "aFOXP3_FIX_R2",
+      "aFOXP3_NATIVE_R1",
+      "aFOXP3_NATIVE_R2",
+      "aH3K4me3_NATIVE_R1",
+      "IgG_FIX_R1",
+      "IgG_NATIVE_R1"
+)
+
+counts <- counts %>% data.frame
+rownames(counts) <- counts$Geneid
+counts <- counts[7:17]
+counts
+
+```
+
+```{r}
+metadata <- data.frame(
+  antibody  = c(rep(c("FLAG","FOXP3"),each=4), "aH3K4me3", "IgG", "IgG"),
+  fixation  = c(rep(c("F", "N", "F", "N"), each=2), "N", "F", "N"),
+  replicate = c(rep(c("1","2"), times=4), "1","1","1")
+)
+rownames(metadata) <- colnames(counts)
+metadata
+```
+
+```{r}
+dds <- DESeqDataSetFromMatrix(countData = counts,
+                              colData = metadata,
+                              design = ~ replicate + fixation + antibody)
+dds <- DESeq(dds)
+```
+
+```{r}
+vsd <- vst(dds)
+
+mm <- model.matrix(~fixation + antibody, colData(vsd))
+
+# limma batch correction
+assay(vsd) <- limma::removeBatchEffect(assay(vsd), vsd$replicate, design=mm)
+pca_data <- plotPCA(vsd, intgroup = c("fixation", "antibody"), returnData=TRUE)
+pca_data
+
+percentVar <- round(100 * attr(pca_data, "percentVar"))
+percentVar
+
+ggplot(pca_data, aes(x=PC1, y=PC2, color=antibody, shape=fixation, label=name)) +
+  geom_point(size=2) +
+  labs(x=paste0("PC1: ", percentVar[1], "% variance"), y=paste0("PC2: ", percentVar[2], "% variance")) +
+  geom_text_repel(size=3.5) +
+  theme_light()
+```
+
+
