@@ -7,7 +7,7 @@ library(ggrepel)
 ```
 
 ```{r}
-counts <- fread("../data/experiment1/consensus_read_counts.txt")
+counts <- fread("../data/experiment1/read_counts_bins.txt")
 colnames(counts) <- c(
       "Geneid","Chr","Start","End","Strand","Length",
       "aFLAG_FIX_R1",
@@ -23,12 +23,29 @@ colnames(counts) <- c(
       "IgG_NATIVE_R1"
 )
 
+
+# reformat and remove pointless columns
 counts <- counts %>% data.frame
 rownames(counts) <- counts$Geneid
 counts <- counts[7:17]
-counts
 
+# filter out low signals
+counts$total_signal <- rowSums(counts)
+counts <- counts[counts$total_signal >= 50, ]
+counts$total_signal <- NULL
+
+counts
 ```
+
+```{r}
+counts$total_signal <- rowSums(counts)
+ggplot(counts, aes(x=total_signal)) +
+  geom_histogram() + 
+  scale_y_log10()
+```
+
+
+
 
 ```{r}
 metadata <- data.frame(
@@ -59,6 +76,30 @@ pca_data
 
 percentVar <- round(100 * attr(pca_data, "percentVar"))
 percentVar
+
+ggplot(pca_data, aes(x=PC1, y=PC2, color=antibody, shape=fixation, label=name)) +
+  geom_point(size=2) +
+  labs(x=paste0("PC1: ", percentVar[1], "% variance"), y=paste0("PC2: ", percentVar[2], "% variance")) +
+  geom_text_repel(size=3.5) +
+  theme_light()
+```
+
+```{r}
+vsd <- vst(dds)
+
+mm <- model.matrix(~fixation + antibody, colData(vsd))
+
+# limma batch correction
+assay(vsd) <- limma::removeBatchEffect(assay(vsd), vsd$replicate, design=mm)
+pca_data <- plotPCA(vsd, intgroup = c("fixation", "antibody"), returnData=TRUE)
+
+percentVar <- round(100 * attr(pca_data, "percentVar"))
+percentVar
+
+# Apply filter
+pca_data <- data.table(pca_data)
+pca_data <- pca_data[fixation=='F' & antibody!='aH3K4me3',]
+pca_data 
 
 ggplot(pca_data, aes(x=PC1, y=PC2, color=antibody, shape=fixation, label=name)) +
   geom_point(size=2) +
