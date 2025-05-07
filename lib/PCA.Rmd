@@ -7,7 +7,7 @@ library(ggrepel)
 ```
 
 ```{r}
-counts <- fread("../data/experiment1/read_counts_bins.txt")
+counts <- fread("../data/experiment1/read_counts_consensus.txt")
 colnames(counts) <- c(
       "Geneid","Chr","Start","End","Strand","Length",
       "aFLAG_FIX_R1",
@@ -31,7 +31,7 @@ counts <- counts[7:17]
 
 # filter out low signals
 counts$total_signal <- rowSums(counts)
-counts <- counts[counts$total_signal >= 50, ]
+counts <- counts[counts$total_signal >= 100, ]
 counts$total_signal <- NULL
 
 counts
