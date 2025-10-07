@@ -11,17 +11,17 @@ input_dir <- "../data/experiment1/peaks/"
 output_dir <- "../results/"
 
 bed_files <- c(
-  "../data/experiment1/seacr_peaks/aFLAG_FIX_R1.seacr.peaks.stringent.bed",
-  "../data/experiment1/seacr_peaks/aFLAG_NATIVE_R2.seacr.peaks.stringent.bed",
-  "../data/experiment1/seacr_peaks/aFOXP3_NATIVE_R1.seacr.peaks.stringent.bed",
-  "../data/experiment1/seacr_peaks/aFLAG_FIX_R2.seacr.peaks.stringent.bed",
-  "../data/experiment1/seacr_peaks/aFOXP3_FIX_R1.seacr.peaks.stringent.bed",
-  "../data/experiment1/seacr_peaks/aFOXP3_NATIVE_R2.seacr.peaks.stringent.bed",
-  "../data/experiment1/seacr_peaks/aFLAG_NATIVE_R1.seacr.peaks.stringent.bed",
-  "../data/experiment1/seacr_peaks/aFOXP3_FIX_R2.seacr.peaks.stringent.bed",
-  "../data/experiment1/seacr_peaks/aH3K4me3_NATIVE_R1.seacr.peaks.stringent.bed"
+  "../data/experiment1/seacr_cpm/aFLAG_FIX_R1.seacr.peaks.stringent.bed",
+  "../data/experiment1/seacr_cpm/aFLAG_NATIVE_R2.seacr.peaks.stringent.bed",
+  "../data/experiment1/seacr_cpm/aFOXP3_NATIVE_R1.seacr.peaks.stringent.bed",
+  "../data/experiment1/seacr_cpm/aFLAG_FIX_R2.seacr.peaks.stringent.bed",
+  "../data/experiment1/seacr_cpm/aFOXP3_FIX_R1.seacr.peaks.stringent.bed",
+  "../data/experiment1/seacr_cpm/aFOXP3_NATIVE_R2.seacr.peaks.stringent.bed",
+  "../data/experiment1/seacr_cpm/aFLAG_NATIVE_R1.seacr.peaks.stringent.bed",
+  "../data/experiment1/seacr_cpm/aFOXP3_FIX_R2.seacr.peaks.stringent.bed",
+  "../data/experiment1/seacr_cpm/aH3K4me3_NATIVE_R1.seacr.peaks.stringent.bed"
 )
-bed_files <- c(
+bed_files2 <- c(
   "../data/experiment1/macs2_peaks/aFLAG_FIX_R1.macs2_summits.bed",
   "../data/experiment1/macs2_peaks/aFLAG_NATIVE_R2.macs2_summits.bed",
   "../data/experiment1/macs2_peaks/aFOXP3_NATIVE_R1.macs2_summits.bed",
@@ -61,5 +61,41 @@ for (bed_file in bed_files) {
 annotated_peaks_df <- as.data.frame(annotated_peaks)
 annotated_peaks_df
 ```
+
+
+```{r}
+gene_files <- c(
+  # FLAG antibody - FIXED condition
+  "../results/macs2/aFLAG_FIX_R1.macs2_summits_genes.txt",
+  "../results/macs2/aFLAG_FIX_R2.macs2_summits_genes.txt",
+  
+  # FLAG antibody - NATIVE condition
+  "../results/macs2/aFLAG_NATIVE_R1.macs2_summits_genes.txt",
+  "../results/macs2/aFLAG_NATIVE_R2.macs2_summits_genes.txt",
+  
+  # FOXP3 antibody - FIXED condition
+  "../results/macs2/aFOXP3_FIX_R1.macs2_summits_genes.txt",
+  "../results/macs2/aFOXP3_FIX_R2.macs2_summits_genes.txt",
+  
+  # FOXP3 antibody - NATIVE condition
+  "../results/macs2/aFOXP3_NATIVE_R1.macs2_summits_genes.txt",
+  "../results/macs2/aFOXP3_NATIVE_R2.macs2_summits_genes.txt",
+  
+  # H3K4me3 antibody - NATIVE condition (only one replicate)
+  "../results/macs2/aH3K4me3_NATIVE_R1.macs2_summits_genes.txt"
+)
+
+
+A <- readLines(gene_files[7])
+B <- readLines(gene_files[8])
+
+C <- intersect(A,B)
+
+print(length(A))
+print(length(B))
+print(length(C))
+```
+
+
 
 

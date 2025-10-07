@@ -1,0 +1,79 @@
+```{r}
+library(DESeq2)
+library(data.table) 
+library(tidyr)
+library(ggplot2)
+library(ggrepel)
+```
+
+```{r}
+counts <- fread("../data/experiment1/counts.txt")
+
+colnames(counts) <- c("Geneid", "Chr", "Start", "End", "Strand", "Length", "aFLAG_FIX_R1", "aFLAG_FIX_R2", "aFLAG_NATIVE_R1", "aFLAG_NATIVE_R2", "aFOXP3_FIX_R1", "aFOXP3_FIX_R2", "aFOXP3_NATIVE_R1", "aFOXP3_NATIVE_R2", "aH3K4me3_NATIVE_R1", "IgG_FIX_R1", "IgG_NATIVE_R1")
+
+counts <- unite(counts, col = region, Chr, Start, End, )
+
+counts <- as.data.frame(counts)
+rownames(counts) <- counts$region
+
+counts <- counts[, 5:ncol(counts)]
+counts
+```
+
+```{r}
+metadata <- data.frame(
+  antibody = c(rep(c("FLAG", "FOXP3"), each=4), "aH3K4me3", "IgG", "IgG"),
+  prep = c(rep(c("FIX","FIX","NAT","NAT"), times=2), "NAT","FIX","NAT"),
+  batch = c(rep(c("1","2"), times=4), "1","1","1")
+)
+
+rownames(metadata) <- colnames(counts)
+metadata
+```
+
+```{r}
+dds <- DESeqDataSetFromMatrix(counts,
+                              metadata,
+                              design = ~ batch + prep + antibody)
+dds <- DESeq(dds)
+```
+
+```{r}
+vsd <- vst(dds)
+
+mm <- model.matrix(~ batch + prep + antibody, colData(vsd))
+
+assay(vsd) <- limma::removeBatchEffect(assay(vsd), vsd$batch, design=mm)
+
+
+plotPCA(vsd, intgroup = c("antibody", "prep"), ntop = 500)
+
+```
+# https://hbctraining.github.io/DGE_workshop_salmon/lessons/03_DGE_QC_analysis.html
+```{r}
+ rld <- rlog(dds, blind=T)
+ rld_mat <- assay(rld)
+ pca <- prcomp(t(rld_mat))
+
+ # Create data frame with metadata and PC3 and PC4 values for input to ggplot
+ df <- cbind(metadata, pca$x)
+ ggplot(df) + geom_point(aes(x=PC3, y=PC4, color = antibody))
+```
+ 
+```{r}
+rld_mat <- assay(rld)    ## assay() is function from the "SummarizedExperiment" package that was loaded when you loaded DESeq2
+rld_cor <- cor(rld_mat)    ## cor() is a base R function
+head(rld_cor)   ## check the output of cor(), make note of the rownames and colnames
+```
+```{r}
+### Load pheatmap package
+library(pheatmap)
+
+### Plot heatmap
+pheatmap(rld_cor, annotation = metadata)
+```
+ 
+
+
+
+
