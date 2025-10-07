@@ -72,6 +72,23 @@ library(pheatmap)
 ### Plot heatmap
 pheatmap(rld_cor, annotation = metadata)
 ```
+```{r}
+native_samples <- grep("NATIVE", colnames(rld_cor), value = TRUE)
+fix_samples    <- grep("FIX", colnames(rld_cor), value = TRUE)
+
+cor_native <- rld_cor[native_samples, native_samples]
+cor_fix    <- rld_cor[fix_samples, fix_samples]
+```
+
+```{r}
+pheatmap(cor_native, annotation = metadata)
+pheatmap(cor_fix, annotation = metadata)
+
+```
+```{r}
+rld_mat
+```
+
  
 
 
